@@ -54,6 +54,18 @@ class SkillAuthorUITests(unittest.TestCase):
         self.assertEqual(dialog.draft.name, "Seventh Lightning")
         self.assertEqual(dialog.draft.row[10:], self.catalog.template_for().row[10:])
 
+    def test_slot_controls_battle_skill_class_when_copying_another_type(self):
+        for slot_type, expected, source in [("signature", "0", "1"), ("generic", "1", "0")]:
+            with self.subTest(slot_type=slot_type):
+                template = next(r for r in self.catalog.records.values() if r.row[20] == source and r.description)
+                dialog = SkillAuthorDialog(None, self.catalog, template.skill_id, slot_type=slot_type)
+                self.addCleanup(sip.delete, dialog)
+                dialog.name_edit.setText("New skill")
+                dialog.accept()
+                self.assertEqual(dialog.draft.row[20], expected)
+                self.assertEqual(dialog.draft.row[10:20], template.row[10:20])
+                self.assertEqual(template.row[20], source)
+
     def test_wizard_slot_assignment_and_back_navigation(self):
         wizard = DigimonCreationWizard(loader=self.loader)
         self.addCleanup(sip.delete, wizard)
@@ -73,6 +85,7 @@ class SkillAuthorUITests(unittest.TestCase):
             with patch("digimon_editor.create_skill_dialog", return_value=record) as create:
                 third.findChild(QPushButton, "create_skill_2").click()
             self.assertEqual(create.call_args.args[2], 20372)
+            self.assertEqual(create.call_args.kwargs["slot_type"], "signature")
             self.assertEqual(slots.get_skills()[:3], [
                 {"id": 20371, "slot": -1}, {"id": 0, "slot": 2}, {"id": record.skill_id, "slot": 3},
             ])

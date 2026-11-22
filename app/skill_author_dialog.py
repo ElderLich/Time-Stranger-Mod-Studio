@@ -11,9 +11,10 @@ from skill_records import MAX_SKILL_ID
 
 
 class SkillAuthorDialog(QDialog):
-    def __init__(self, parent, catalog, template_id=0, *, destination_hint=""):
+    def __init__(self, parent, catalog, template_id=0, *, destination_hint="", slot_type=None):
         super().__init__(parent)
         self.catalog = catalog
+        self.slot_type = slot_type
         self.draft = None
         self.setWindowTitle("Create Skill")
         self.resize(600, 600)
@@ -140,6 +141,7 @@ class SkillAuthorDialog(QDialog):
             self.draft = self.catalog.create(
                 self.skill_id.value(), self.name_edit.text().strip(),
                 template_id=item.data(Qt.ItemDataRole.UserRole) or None,
+                slot_type=self.slot_type,
                 description=description if self.description.document().isModified() or not description else None,
             )
         except (ValueError, OSError) as exc:
@@ -149,6 +151,6 @@ class SkillAuthorDialog(QDialog):
         super().accept()
 
 
-def create_skill_dialog(parent, catalog, template_id=0, *, destination_hint=""):
-    dialog = SkillAuthorDialog(parent, catalog, template_id, destination_hint=destination_hint)
+def create_skill_dialog(parent, catalog, template_id=0, *, destination_hint="", slot_type=None):
+    dialog = SkillAuthorDialog(parent, catalog, template_id, destination_hint=destination_hint, slot_type=slot_type)
     return dialog.draft if dialog.exec() == QDialog.DialogCode.Accepted else None

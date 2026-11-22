@@ -10,7 +10,9 @@ references. Any mod supplying those assets must also be available in the game.
 
 Select the new skill under **Skills → Signature Skills** or **Generic Skills**,
 then choose **Save to Loaded Source**. You can also click **New skill…** on a
-slot to clone and replace its current skill in one step. In the creation wizard,
+slot to clone and replace its current skill in one step. A new skill created
+from a signature slot appears under Special Skills in battle Setup. A new
+skill created from a generic slot appears under Attachment Skills. In the creation wizard,
 use **Step 7 → Skills**. **Finish** saves the assigned new definitions together
 with the Digimon.
 

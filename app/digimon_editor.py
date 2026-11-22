@@ -2245,7 +2245,7 @@ class SkillEditor(QWidget):
 
     def create_skill_for_slot(self, index: int):
         skill_id = self.skill_widgets[index].findChild(QSpinBox, f"skill_id_{index}")
-        record = self.create_skill(skill_id.value())
+        record = self.create_skill(skill_id.value(), slot_type=self.skill_type)
         if record is not None:
             skill_id.setValue(record.skill_id)
 
@@ -4210,10 +4210,10 @@ class SkillsPage(QWizardPage):
         layout.addWidget(groups)
         self.setLayout(layout)
 
-    def create_skill(self, template_id):
+    def create_skill(self, template_id, *, slot_type):
         try:
             catalog = self.wizard.skill_catalog()
-            record = create_skill_dialog(self, catalog, template_id,
+            record = create_skill_dialog(self, catalog, template_id, slot_type=slot_type,
                                          destination_hint="Skills assigned to a slot are saved when you finish the wizard.")
             if record is not None:
                 catalog.add_draft(record)
@@ -13550,7 +13550,7 @@ class DigimonEditor(QMainWindow, StudioEvolutionPaths):
             QMessageBox.warning(self, "Skill destination", "Choose a Reloaded II mod or its dsts-loader folder.")
         return root
 
-    def create_mod_skill(self, template_id=0, *, assigning=True):
+    def create_mod_skill(self, template_id=0, *, assigning=True, slot_type=None):
         root = self._choose_skill_mod()
         if root is None:
             return None
@@ -13560,7 +13560,7 @@ class DigimonEditor(QMainWindow, StudioEvolutionPaths):
             hint = f"The skill definition will be saved to {root.parent.name}."
             if assigning:
                 hint += " Save the Digimon to keep its slot assignment."
-            record = create_skill_dialog(self, catalog, template_id, destination_hint=hint)
+            record = create_skill_dialog(self, catalog, template_id, destination_hint=hint, slot_type=slot_type)
             if record is None:
                 return None
             commit_skill_records(root, [record], self.loader, roots)

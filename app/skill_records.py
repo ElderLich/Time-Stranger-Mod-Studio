@@ -186,7 +186,7 @@ class SkillCatalog:
     def template_for(self, template_id=None):
         return self._base_attack if template_id is None else self.records.get(template_id)
 
-    def create(self, skill_id, name, *, template_id=None, description=None):
+    def create(self, skill_id, name, *, template_id=None, description=None, slot_type=None):
         self._check_free(skill_id)
         name = _skill_name(name)
         template = self.template_for(template_id)
@@ -194,6 +194,11 @@ class SkillCatalog:
             raise ValueError(f"Template skill {ATTACK_ID if template_id is None else template_id} is unavailable.")
         _validate_battle(template.row)
         row = list(template.row)
+        if slot_type is not None:
+            # Battle skill classification controls where the skill appears in Setup.
+            if slot_type not in ("signature", "generic"):
+                raise ValueError(f"Unknown skill slot type: {slot_type}")
+            row[20] = "0" if slot_type == "signature" else "1"
         row[0] = row[4] = str(skill_id)
         original_desc = int(row[5] or 0)
         if description is None:
