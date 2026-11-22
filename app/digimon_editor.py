@@ -2072,12 +2072,23 @@ class SkillEditor(QWidget):
             choice_row.addWidget(create_button)
 
         # Skill Level/Slot
-        slot_label = "Learn Slot:" if self.skill_type == "signature" else "Level:"
+        slot_label = "Learn Slot:" if self.skill_type == "signature" else "Learn Level:"
         details_row.addWidget(QLabel(slot_label))
         skill_level = QSpinBox()
         skill_level.setRange(-1, 100)
         skill_level.setObjectName(f"skill_level_{index}")
         skill_level.setMinimumWidth(95)
+        if self.skill_type == "generic":
+            skill_level.setToolTip("Use level 2 or higher to learn this attachment after starting at level 1.")
+
+            def assign_learn_level(new_id):
+                # Official unused slots can hold 0 or 1. The earliest official
+                # attachment unlock is level 2, including on OmniShoutmon.
+                if new_id and skill_level.value() < 2:
+                    skill_level.setValue(2)
+                skill_level.setMinimum(1 if new_id else -1)
+
+            skill_id.valueChanged.connect(assign_learn_level)
         skill_level.valueChanged.connect(self.skillChanged.emit)
         details_row.addWidget(skill_level)
         if self.compact:
@@ -2143,7 +2154,10 @@ class SkillEditor(QWidget):
             if i < len(skills):
                 skill_id_widget.setValue(skills[i].get("id", 0))
                 level_key = "slot" if self.skill_type == "signature" else "level"
-                skill_level_widget.setValue(skills[i].get(level_key, 0))
+                level = skills[i].get(level_key, 0)
+                if self.skill_type == "generic" and skill_id_widget.value() and level < 1:
+                    level = 2
+                skill_level_widget.setValue(level)
             else:
                 skill_id_widget.setValue(0)
                 skill_level_widget.setValue(0)

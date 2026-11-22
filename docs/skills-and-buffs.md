@@ -14,6 +14,14 @@ slot to clone and replace its current skill in one step. In the creation wizard,
 use **Step 7 → Skills**. **Finish** saves the assigned new definitions together
 with the Digimon.
 
+For a learnable attachment, use **Generic Skills → Learn Level**. The earliest
+level-up in the official tables is **Lv. 2**. Assigning an attachment to an
+empty slot defaults to 2 when the slot has no later level set. When reopening
+an older mod, the editor displays 2 for an assigned attachment with a missing,
+zero or negative level. It preserves an explicitly saved level of 1. To get a
+level-up unlock on that slot, enter 2 or a later reachable level and choose
+**Save to Loaded Source**.
+
 ## Compatibility and buffs
 
 - To nullify unfavorable compatibility, use Advanced Skills → Additional Property

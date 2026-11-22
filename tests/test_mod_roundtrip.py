@@ -227,6 +227,42 @@ class ModRoundtripTests(unittest.TestCase):
         self.assertEqual(self.editor.evolution_jogress_list.count(), 2)
         self.assertIn('ID: 675', self.editor.evolution_mode_change_list.item(0).text())
 
+    def test_attachment_learn_levels_survive_assignment_save_and_reopen(self):
+        editor = self.editor
+        digimon = deepcopy(editor.loader.get_digimon_by_chr_id('chr683'))  # OmniShoutmon
+        digimon.generic_skills = [
+            {'id': 0, 'level': 1}, {'id': 30222, 'level': 22},
+            {'id': 34021, 'level': 30}, {'id': 32071, 'level': 40},
+        ]
+        editor.load_digimon_data(digimon)
+        slots = editor.generic_skills_editor
+        slots.populate_skill_combo(0)
+        combo = slots.skill_widgets[0].findChild(gui.QComboBox)
+        choice = combo.findData(30252)  # Saint Knuckle II
+        self.assertGreater(choice, 0)
+        combo.setCurrentIndex(choice)
+        combo.activated.emit(choice)
+        self.assertEqual(slots.get_skills()[0], {'id': 30252, 'level': 2})
+        slots.clear_skill_slot(0)
+        self.assertEqual(slots.get_skills()[0], {'id': 0, 'level': 0})
+        slots.skill_widgets[0].findChild(gui.QSpinBox, 'skill_id_0').setValue(30252)
+        self.assertTrue(editor._merge_digimon_to_dsts_loader(self.root, digimon))
+        path = self.root / 'patch/data/digimon_status.mbe/000_digimon_status_data.ap.csv'
+        self.assertEqual(read_csv(path)[1][108:120], [
+            '30252', '', '2', '30222', '', '22', '34021', '', '30', '32071', '', '40',
+        ])
+        reopened, = editor._parse_digimon_status_csv(path, self.root)
+        editor.load_digimon_data(reopened)
+        self.assertEqual(slots.get_skills(), reopened.generic_skills)
+
+        # Old editor exports could assign a skill at zero. Preserve explicit
+        # positive levels and empty-slot values when reopening existing mods.
+        slots.load_skills([
+            {'id': 30252, 'level': 0}, {'id': 30222, 'level': 1},
+            {'id': 0, 'level': -1}, {'id': 0, 'level': 40},
+        ])
+        self.assertEqual([s['level'] for s in slots.get_skills()], [2, 1, -1, 40])
+
     def test_loaded_leviamon_create_assign_edit_and_reopen_skills(self):
         editor = self.editor
         digimon = deepcopy(editor.loader.get_digimon_by_chr_id('chr037'))
