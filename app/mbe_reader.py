@@ -117,6 +117,10 @@ def read_mbe(f):
 
                 for col_idx, col in enumerate(columns):
                     try:
+                        # Each consecutive run owns a separate aligned 32-bit word.
+                        # The byte cursor advances when the word is fetched.
+                        if col['name'] != 'bool':
+                            bit_offset = 0
                         if col['name'] == 'bool':
                             if bit_offset == 0:
                                 # Align to 4-byte boundary for bool
@@ -161,10 +165,6 @@ def read_mbe(f):
                         if isinstance(e, ValueError):
                             raise
                         raise ValueError(f"Unexpected error parsing row {row_idx + 1}, column {col_idx + 1} in sheet '{sheet_name}': {e}")
-
-                # Handle remaining bool bits
-                if bit_offset > 0:
-                    offset_in_row += 4
 
                 rows.append(parsed_row)
                 offset += area_size + ((area_size + 7) & ~7) - area_size
