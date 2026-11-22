@@ -3384,7 +3384,7 @@ class DigimonCreationWizard(QWizard):
             writer = csv.writer(f, quoting=csv.QUOTE_ALL)
             writer.writerow([digimon.char_key, display_name])
 
-    def _write_profile_ap_csv(self, filepath: Path, digimon: DigimonData, profile_text: Optional[str] = None, name_text: Optional[str] = None, *, english: bool = True):
+    def _write_profile_ap_csv(self, filepath: Path, digimon: DigimonData, profile_text: Optional[str] = None, name_text: Optional[str] = None, *, english: bool = True, locale: Optional[str] = None):
         """Write digimon_profile.ap.csv"""
         import csv
 
@@ -3394,7 +3394,7 @@ class DigimonCreationWizard(QWizard):
             profile = digimon.profile_text if digimon.profile_text else f"A mysterious Digimon known as {fallback_name}."
         else:
             profile = profile_text
-        profile = format_profile_text_for_game(profile, english=english)
+        profile = format_profile_text_for_game(profile, english=english, locale=locale)
 
         profile_key = digimon_profile_key(digimon.id)
 
@@ -6608,7 +6608,8 @@ class DigimonEditor(QMainWindow, StudioEvolutionPaths):
         if not widgets:
             return
         profile_edit = widgets["profile_text"]
-        formatted_text = format_profile_text_for_game(profile_edit.toPlainText(), english=folder == ENGLISH_TEXT_FOLDER)
+        formatted_text = format_profile_text_for_game(profile_edit.toPlainText(), english=folder == ENGLISH_TEXT_FOLDER,
+                                                     locale=folder.removeprefix("patch_text"))
         if formatted_text != profile_edit.toPlainText():
             profile_edit.setPlainText(formatted_text)
             self.mark_as_modified()
@@ -12883,6 +12884,7 @@ class DigimonEditor(QMainWindow, StudioEvolutionPaths):
                     profile_text=profile_text,
                     name_text=name_text,
                     english=folder == ENGLISH_TEXT_FOLDER,
+                    locale=folder.removeprefix("patch_text"),
                 ),
                 lambda r: self._csv_cell(r, 0) in match_profile_keys,
                 drop_malformed=True,

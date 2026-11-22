@@ -459,6 +459,39 @@ class ModRoundtripTests(unittest.TestCase):
         narrow = gui.format_profile_text_for_game(" ".join(["iii"] * 25))
         self.assertGreater(len(wide.splitlines()), len(narrow.splitlines()))
 
+    def test_localized_profile_uses_native_widths_and_unicode_boundaries(self):
+        for locale, fragment, cap in (("00", "「進化したデジモン。」", 24),
+                                      ("10", "牠用「黑色火焰」攻擊敵人。", 23),
+                                      ("11", "它用「黑色火焰」攻击敌人。", 23)):
+            with self.subTest(locale=locale):
+                original = fragment * 12
+                result = gui.format_profile_text_for_game(original, locale=locale)
+                self.assertEqual(result.replace("\n", ""), original)
+                self.assertGreater(len(result.splitlines()), 1)
+                self.assertLessEqual(max(map(len, result.splitlines())), cap)
+                self.assertTrue(all(line[0] not in "。」、" and line[-1] != "「" for line in result.splitlines()))
+                self.assertEqual(gui.format_profile_text_for_game(result, locale=locale), result)
+        original = "界" * 25 + "\n\n「短い行。」"
+        self.assertEqual(gui.format_profile_text_for_game(original, locale="00"), original)
+
+    def test_localized_profile_exports_spaced_and_long_words(self):
+        original = " ".join(["디지몬은 강한 불꽃을 사용한다."] * 6)
+        formatted = gui.format_profile_text_for_game(original, locale="09")
+        self.assertEqual(" ".join(formatted.splitlines()), original)
+        self.assertGreater(len(formatted.splitlines()), 1)
+        for locale, token in (("09", "불" * 74), ("04", "W" * 61), ("02", "e\u0301" * 80)):
+            with self.subTest(locale=locale):
+                result = gui.format_profile_text_for_game(token, locale=locale)
+                self.assertGreater(len(result.splitlines()), 1)
+                self.assertEqual(result.replace("\n", ""), token)
+                self.assertTrue(all(not line.startswith("\u0301") for line in result.splitlines()))
+        specimen = self.specimen()
+        specimen.localized_text = {"patch_text09": {"profile_text": original}}
+        self.assertTrue(self.editor._merge_digimon_to_dsts_loader(self.root, specimen, sync_form=False))
+        table = self.root / "patch_text09/text/digimon_profile.mbe"
+        self.assertEqual(self.editor._load_profile_from_csv(table, specimen.id), formatted)
+        self.assertEqual(len(read_csv(table / "000_Sheet1.ap.csv")), 2)
+
     def test_mod_merge_and_import_keep_optional_rows_and_other_digimon(self):
         first, other = self.specimen(), self.specimen(55016)
         for specimen in (first, other):
