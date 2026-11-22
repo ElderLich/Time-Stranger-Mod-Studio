@@ -15,6 +15,21 @@ ID beside each name so you can distinguish variants.
 4. **Export / Copy Mod** to create a separate mod. Save your form edits first
    when exporting the loaded source.
 
+### Importing a ReArise model
+
+In the companion Blender importer, run **Battle Plan Only** on the library
+GLB. The plan identifies the actor motion, sound and visual effects associated
+with each captured skill. Some second skills use the shared casting motion
+`BA02`. Choose the source action before assigning the destination's `BS02` slot.
+
+In Studio, assign each move under **Skills → Signature Skills**. Choose a
+native battle template that delivers damage to the same targets. For an area
+attack, check both the effect at the center of the group and the impact on
+each enemy. Save the mod, compare its exported rows and assets with the
+importer's battle plan, then try the attack against multiple enemies in-game.
+Check the HP bars and damage numbers alongside the camera, sound and effects.
+The importer includes the full procedure in `docs/rearise-port-workflow.md`.
+
 ## Export structure
 
 The resulting folder opens in Reloaded II.
